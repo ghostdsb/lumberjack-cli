@@ -18,11 +18,11 @@ defmodule Lumberjack do
       file
       |> make_result_distribution()
     result_map
-    |> Enum.map(fn {res, count} -> {res, count*100/total} end)
+    |> Enum.map(fn {res, count} -> {res, {count*100/total, "#{to_string(count)}/#{to_string(total)}"}} end)
     |> Map.new()
   end
 
-  def make_result_distribution(file) do
+  defp make_result_distribution(file) do
     file
     |> read_file()
     |> String.split("\n")
@@ -41,7 +41,7 @@ defmodule Lumberjack do
     )
   end
 
-  def battle_status(file, battle_id, complaint) do
+  def battle_result(file, battle_id, complaint) do
     battle_log_list =
       file
       |> read_file()
@@ -64,8 +64,7 @@ defmodule Lumberjack do
       result
   end
 
-  def draw_board(game_state) do
-     game_state
+  defp draw_board(game_state) do
     board = 0..8
     |> Enum.map(fn pos -> game_state[pos |> to_string] || " - " end )
     |> Enum.chunk_every(3)
@@ -75,7 +74,7 @@ defmodule Lumberjack do
     |> IO.puts()
   end
 
-  def get_player_id_move(log_string, complaint) do
+  defp get_player_id_move(log_string, complaint) do
     [_ts, _battle_id_info, _info, player_id, _arrow, move] =
       log_string
       |> String.split(" ")
@@ -86,7 +85,7 @@ defmodule Lumberjack do
 
   end
 
-  def read_file(file) do
+  defp read_file(file) do
     with {:ok, content} <- File.read(file) do
       content
     else
@@ -94,35 +93,35 @@ defmodule Lumberjack do
     end
   end
 
-  def is_result(line_string) do
+  defp is_result(line_string) do
     line_string
     |> String.contains?("gameover status:")
   end
 
-  def is_t3(line_string) do
+  defp is_t3(line_string) do
     line_string
     |> String.contains?("match_id=match_id:T3:")
   end
 
-  def not_reconnection(line_string) do
+  defp not_reconnection(line_string) do
     line_string
     |> String.contains?("reconnection")
     |> (&(!&1)).()
   end
 
-  def get_result(line_string) do
+  defp get_result(line_string) do
     [_ts, _battle_id_info, _info, _gotxt, _statustxt, reason, _winner, _arrow, _loser] =
       line_string
       |> String.split(" ")
     reason
   end
 
-  def battle_logs(log_lines, battle_id) do
+  defp battle_logs(log_lines, battle_id) do
     log_lines
     |> String.contains?(battle_id)
   end
 
-  def get_battle_ids(line_string) do
+  defp get_battle_ids(line_string) do
     [_ts, battle_id_info| _rest] =
       line_string
       |> String.split(" ")
